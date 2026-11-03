@@ -1,0 +1,42 @@
+//
+// HyperOS Gallery and Editor Port (LLions)
+//
+
+android_app_import {
+    name: "HyperOSGallery",
+    apk: "HyperOSGallery.apk",
+    presigned: true,
+    preprocessed: true,
+    skip_preprocessed_apk_checks: true,
+    product_specific: true,
+    optional_uses_libs: [
+        "androidx.window.extensions",
+        "androidx.window.sidecar",
+    ],
+}
+
+android_app_import {
+    name: "HyperOSEditor",
+    apk: "HyperOSEditor.apk",
+    presigned: true,
+    preprocessed: true,
+    skip_preprocessed_apk_checks: true,
+    product_specific: true,
+    optional_uses_libs: [
+        "androidx.window.extensions",
+        "androidx.window.sidecar",
+    ],
+}
+
+java_import {
+    name: "micloud-sdk",
+    jars: ["micloud-sdk.jar"],
+    product_specific: true,
+}
+
+prebuilt_etc {
+    name: "micloud-sdk.xml",
+    src: "micloud-sdk.xml",
+    sub_dir: "permissions",
+    product_specific: true,
+}
