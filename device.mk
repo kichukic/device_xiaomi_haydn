@@ -34,6 +34,7 @@ PRODUCT_PACKAGES += \
     SettingsProviderOverlayHaydnIN \
     SettingsProviderOverlayHaydnproCN \
     SystemUIOverlayHaydn \
+    UpdaterOverlayHaydn \
     WifiOverlayHaydn \
     WifiOverlayHaydnCN \
     WifiOverlayHaydnIN \
