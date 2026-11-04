@@ -47,3 +47,6 @@ TARGET_VENDOR_PROP += $(DEVICE_PATH)/vendor.prop
 
 # Include proprietary files
 include vendor/xiaomi/haydn/BoardConfigVendor.mk
+
+# Xiaomi Camera
+-include vendor/xiaomi/miuicamera-haydn/BoardConfig.mk

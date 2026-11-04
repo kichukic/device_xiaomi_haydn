@@ -56,4 +56,4 @@ $(call soong_config_set_bool,qti_vibrator,use_effect_stream,true)
 $(call inherit-product, vendor/xiaomi/haydn/haydn-vendor.mk)
 
 # Xiaomi Camera (MIUI/Leica Camera)
-$(call inherit-product-if-exists, device/xiaomi/camera/miuicamera.mk)
+$(call inherit-product-if-exists, vendor/xiaomi/miuicamera-haydn/device.mk)
