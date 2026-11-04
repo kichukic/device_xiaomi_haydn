@@ -61,3 +61,7 @@ $(call inherit-product, vendor/xiaomi/haydn/haydn-vendor.mk)
 
 # Xiaomi Camera (MIUI/Leica Camera)
 $(call inherit-product-if-exists, vendor/xiaomi/miuicamera-haydn/device.mk)
+
+# Keybox
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/security/keybox.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/security/keybox.xml
