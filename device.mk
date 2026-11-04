@@ -40,6 +40,10 @@ PRODUCT_PACKAGES += \
     WifiOverlayHaydnIN \
     WifiOverlayHaydnproCN
 
+# KernelSU manager (BakaSU), preinstalled as a regular product app
+PRODUCT_PACKAGES += \
+    com.resukisu.resukisu-preinstalled
+
 # Refresh Rate
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.surface_flinger.use_content_detection_for_refresh_rate=false

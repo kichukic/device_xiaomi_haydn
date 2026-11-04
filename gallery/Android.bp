@@ -25,17 +25,3 @@ android_app_import {
         "androidx.window.sidecar",
     ],
 }
-
-java_import {
-    name: "micloud-sdk",
-    jars: ["micloud-sdk.jar"],
-    installable: true,
-    product_specific: true,
-}
-
-prebuilt_etc {
-    name: "micloud-sdk.xml",
-    src: "micloud-sdk.xml",
-    sub_dir: "permissions",
-    product_specific: true,
-}
