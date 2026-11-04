@@ -7,7 +7,6 @@ android_app_import {
     apk: "hijackcut.apk",
     presigned: true,
     preprocessed: true,
-    skip_preprocessed_apk_checks: true,
     product_specific: true,
     optional_uses_libs: [
         "androidx.window.extensions",

@@ -21,6 +21,7 @@ PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
 
 RISING_MAINTAINER := "Kishor TH"
 
+
 # Prebuilt baked apps
 PRODUCT_PACKAGES +=     hijackCUT     HyperOSGallery     HyperOSEditor     micloud-sdk     micloud-sdk.xml
 
