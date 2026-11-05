@@ -25,3 +25,10 @@
 - **HyperOS Gallery & Offline Editor:** Bypassed Xiaomi cloud account check; all editing tools, filters, and AI effects operate 100% offline.
 - **Leica Camera 5.0:** Full working MIUI camera integration.
 - **hijackCUT:** Integrated 4K video editing application.
+
+### Additional Enhancements (Storage, ART, Audio & Haptics)
+- **UFS 3.1 I/O Kyber Scheduler:** Low-latency multi-queue scheduler with 128KB read-ahead and CPU spinlock reduction.
+- **ART Speed-Profile & Parallel Dexopt:** Profile-guided AOT bytecode compilation on install and 6/8-thread dex2oat.
+- **120Hz SurfaceFlinger Pacing & 25MB Launcher Pinning:** Latch unsignaled buffers and prevent launcher redraws.
+- **24-bit Hi-Fi Audio & 64KB DSP Buffer:** High-resolution audio pipeline with 50% fewer CPU wakeups during music playback.
+- **3-Level Vibration Haptics:** Granular Low/Medium/High vibration intensity slider in Settings.
