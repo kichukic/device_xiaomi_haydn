@@ -5,4 +5,4 @@
 
 PRODUCT_MAKEFILES :=     $(LOCAL_DIR)/lineage_haydn.mk
 
-COMMON_LUNCH_CHOICES :=     lineage_haydn-cp2a-userdebug     lineage_haydn-userdebug
+COMMON_LUNCH_CHOICES :=     lineage_haydn-cp2a-userdebug     lineage_haydn-userdebug     lineage_haydn-cp2a-user     lineage_haydn-user
