@@ -6,4 +6,8 @@
 <resources>
     <!-- Default for Settings.Global.DEVICE_NAME $1=MODEL-->
     <string name="def_device_name_simple">Redmi K40 Pro+</string>
+    <!-- Default animation scales for hyper-fluid 0.8x spring physics -->
+    <string name="def_window_animation_scale" translatable="false">0.8</string>
+    <string name="def_transition_animation_scale" translatable="false">0.8</string>
+    <string name="def_animator_duration_scale" translatable="false">0.8</string>
 </resources>

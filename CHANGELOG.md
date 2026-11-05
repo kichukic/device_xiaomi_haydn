@@ -32,3 +32,6 @@
 - **120Hz SurfaceFlinger Pacing & 25MB Launcher Pinning:** Latch unsignaled buffers and prevent launcher redraws.
 - **24-bit Hi-Fi Audio & 64KB DSP Buffer:** High-resolution audio pipeline with 50% fewer CPU wakeups during music playback.
 - **3-Level Vibration Haptics:** Granular Low/Medium/High vibration intensity slider in Settings.
+
+### UI Animation Physics
+- **0.8x Spring Physics:** Configured `def_window_animation_scale`, `def_transition_animation_scale`, and `def_animator_duration_scale` to 0.8x across all regional models (Mi 11X Pro, Redmi K40 Pro, Mi 11i) for hyper-fluid gesture navigation.
