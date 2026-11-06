@@ -7,6 +7,7 @@ android_app_import {
     apk: "HyperOSGallery.apk",
     presigned: true,
     preprocessed: true,
+    privileged: true,
     product_specific: true,
     optional_uses_libs: [
         "androidx.window.extensions",
@@ -19,6 +20,7 @@ android_app_import {
     apk: "HyperOSEditor.apk",
     presigned: true,
     preprocessed: true,
+    privileged: true,
     product_specific: true,
     optional_uses_libs: [
         "androidx.window.extensions",
