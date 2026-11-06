@@ -8,6 +8,7 @@ android_app_import {
     presigned: true,
     preprocessed: true,
     privileged: true,
+    skip_preprocessed_apk_checks: true,
     product_specific: true,
     optional_uses_libs: [
         "androidx.window.extensions",
@@ -21,6 +22,7 @@ android_app_import {
     presigned: true,
     preprocessed: true,
     privileged: true,
+    skip_preprocessed_apk_checks: true,
     product_specific: true,
     optional_uses_libs: [
         "androidx.window.extensions",
