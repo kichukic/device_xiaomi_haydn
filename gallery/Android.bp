@@ -1,0 +1,27 @@
+//
+// HyperOS Gallery and Editor Port (LLions)
+//
+
+android_app_import {
+    name: "HyperOSGallery",
+    apk: "HyperOSGallery.apk",
+    presigned: true,
+    preprocessed: true,
+    product_specific: true,
+    optional_uses_libs: [
+        "androidx.window.extensions",
+        "androidx.window.sidecar",
+    ],
+}
+
+android_app_import {
+    name: "HyperOSEditor",
+    apk: "HyperOSEditor.apk",
+    presigned: true,
+    preprocessed: true,
+    product_specific: true,
+    optional_uses_libs: [
+        "androidx.window.extensions",
+        "androidx.window.sidecar",
+    ],
+}
