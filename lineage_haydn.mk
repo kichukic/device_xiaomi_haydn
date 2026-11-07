@@ -23,10 +23,8 @@ RISING_MAINTAINER := "Kishor TH"
 
 
 # Prebuilt baked apps
-PRODUCT_PACKAGES +=     hijackCUT     HyperOSGallery     HyperOSEditor     
+PRODUCT_PACKAGES +=     hijackCUT
 
-# HyperOS Gallery properties to satisfy Xiaomi API parameter requirements
-PRODUCT_PRODUCT_PROPERTIES +=     ro.miui.ui.version.name=V816.0.19.0.UKKMIXM     ro.miui.ui.version.code=14     ro.miui.region=Global     ro.miui.build.region=Global
 
 # Enforce Google Suite
 PRODUCT_PACKAGES +=     GoogleDialer     PrebuiltBugle     GoogleContacts     Photos     NexusLauncherRelease

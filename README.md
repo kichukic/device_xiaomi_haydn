@@ -19,7 +19,6 @@ This repository contains the device configuration tree for building **RisingOS 9
 
 - **Authentic `user` Variant:** Production release-keys build (`ro.debuggable=0`, no JDWP, passes banking apps).
 - **Embedded Strong Keybox:** Bundles Yurikey67 in `/product/etc/security/keybox.xml`, automatically seeded to TrickyStore via `AxSpoofManager`.
-- **HyperOS Gallery & MediaEditor:** Full offline editing tools without Xiaomi account login requirement.
 - **Leica MIUI Camera 5.0:** Integrated camera stack with working photo, video, portrait, and pro modes.
 - **hijackCUT:** Integrated 4K video editor suite.
 - **BakaSU & SUSFS:** KernelSU-Next / BakaSU 1.5.5 support with preinstalled manager hook (`35257`).

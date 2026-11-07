@@ -22,7 +22,6 @@
 
 ### Audio & Multimedia
 - **Motorola Dolby Atmos (`MotoDolbyDax3`):** Integrated full Dolby stack with working master toggle, 10-band equalizer, presets, and `DSPVolumeSynchronizer`.
-- **HyperOS Gallery & Offline Editor:** Bypassed Xiaomi cloud account check; all editing tools, filters, and AI effects operate 100% offline.
 - **Leica Camera 5.0:** Full working MIUI camera integration.
 - **hijackCUT:** Integrated 4K video editing application.
 

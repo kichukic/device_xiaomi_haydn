@@ -20,9 +20,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/etc/init.haydn.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.haydn.rc
 
-# Permissions
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/permissions/privapp-permissions-gallery.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/privapp-permissions-gallery.xml
 
 # NFC
 PRODUCT_COPY_FILES += \
