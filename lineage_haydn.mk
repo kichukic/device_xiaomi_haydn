@@ -19,7 +19,7 @@ PRODUCT_BUILD_PROP_OVERRIDES +=     BuildDesc="haydn_global-user 14 UKQ1.231207.
 
 PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
 
-RISING_MAINTAINER := "Kishor TH"
+RISING_MAINTAINER := Kishor TH
 
 
 # Prebuilt baked apps
