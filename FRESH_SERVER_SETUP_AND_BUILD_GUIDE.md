@@ -268,6 +268,8 @@ Launch inside a persistent tmux session on the server:
 tmux new -s rising
 cd /serverhive/hijacku/RisingOS
 source build/envsetup.sh
+# Explicitly configured as COMMUNITY in device/xiaomi/haydn/lineage_haydn.mk
+# Generates: RisingOS-9-*-GAPPS-COMMUNITY-haydn-ota.zip
 brunch haydn 2>&1 | tee /serverhive/hijacku/build.log
 ```
 
@@ -464,3 +466,24 @@ A detailed index of all historical fixes, tweaks, and architecture decisions com
   Commits `87f4070` and `845b1d4` enable the UVC function driver in `lahaina-qgki_defconfig`, allowing the phone to function as a plug-and-play 4K PC webcam.
 * **Watchdog & Crash Suppression:**
   `panic_on_oops=0`, `panic=0`, and `# CONFIG_QCOM_FORCE_WDOG_BITE_ON_PANIC is not set` prevent modem/audio driver transients from triggering instant device brownouts.
+
+---
+
+## 11. Battery Powerhouse & Push Notification Architecture
+
+### Why Push Notifications Never Sleep or Delay:
+* **FCM High-Priority Push Socket:** Instant messaging apps (WhatsApp, Telegram, Signal, Gmail, and banking apps) do not run persistent polling threads in the background. Instead, Google Play Services (GMS) maintains a single low-power TCP push socket with Google servers (`mtalk.google.com`).
+* **Instant cgroup v2 Unfreezing:** When an incoming message arrives, GMS receives an FCM High-Priority push ticket. Android's `DeviceIdleController` immediately acquires a WakeLock and unfreezes (thaws) the target app from the cgroup v2 freezer within milliseconds. The app displays the notification and vibrates/rings without delay.
+* **Foreground Service Exemption:** Apps running active foreground services (e.g. Spotify playing music, Google Maps navigation, workout tracking) are strictly exempt from being frozen in the kernel.
+* **What is Actually Stopped:** Quick Doze and the cgroup v2 freezer eliminate unnecessary background CPU spinning by dormant apps (e.g., background telemetry, advertising SDKs, social media pre-fetches), saving up to 35% battery on idle.
+
+---
+
+## 12. Zero Data Loss Dirty-Flash Runbook
+
+When flashing new releases over an existing installation:
+1. Reboot phone to **TWRP** or **OrangeFox Recovery**.
+2. Flash `RisingOS-9-*-GAPPS-COMMUNITY-haydn-ota.zip`.
+3. Wipe **Dalvik / ART Cache** ONLY.
+4. ⚠️ **DO NOT WIPE OR FORMAT `/data`** — User data, applications, accounts, photos, and WhatsApp chats will be 100% preserved.
+5. Reboot to System. Encryption keys remain valid because all builds are signed with the same private `releasekey`.

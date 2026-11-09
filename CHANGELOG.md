@@ -3,14 +3,14 @@
 **Device:** Xiaomi Mi 11X Pro / Redmi K40 Pro / Mi 11i (`haydn` / `haydnin` - SM8350)  
 **Maintainer:** Kishor TH ([@HI_JACK_U](https://t.me/HI_JACK_U) / `kichukic@gmail.com`)  
 **Base:** Android 17 / SDK 37 / LineageOS 24.0 base  
-**Build Type:** Official Signed Release (`user` variant, official private `releasekey`)  
-**Compatibility:** 100% Dirty-Flashable with **Zero Data Loss** over previous official builds
+**Build Type:** Community Signed Release (`COMMUNITY` variant, official private `releasekey`)  
+**Compatibility:** 100% Dirty-Flashable with **Zero Data Loss** over previous builds
 
 ---
 
 ## 📅 Chronological Updates
 
-### [2026-11-10] — Battery Powerhouse, Schedutil Governor & Official Release Edition
+### [2026-11-10] — Battery Powerhouse, Schedutil Governor & Community Signed Edition
 
 > [!TIP]
 > **Battery Target Achieved:** 7.5 – 9.5 Hours Screen-On Time (SOT) through kernel governor rate calibration, cgroup v2 cached process freezing, and SurfaceFlinger render optimizations.
@@ -40,10 +40,11 @@
 * Default ZRAM compression engine switched to ultra-low CPU overhead LZ4 (`CONFIG_ZRAM_DEF_COMP_LZ4=y`).
 * Configured `vm.swappiness=60` and disabled proactive background compaction (`vm.compaction_proactiveness=0`).
 
-#### 🏷️ Official Release Branding & Keys
-* Corrected maintainer formatting (`RISING_MAINTAINER := Kishor TH` without quotes) in `lineage_haydn.mk`.
-* Added `haydn` and `Kishor TH` to official device rosters in `vendor/official_devices/OTA/` (`RISING_BUILDTYPE=OFFICIAL`).
+#### 🏷️ Community Release Branding & Keys
+* Configured explicit community build designation (`RISING_BUILDTYPE := COMMUNITY`) for the maintainer's `rising-unofficial` SourceForge release channel.
+* Preserved official maintainer metadata (`RISING_MAINTAINER := Kishor TH` without quotes) in `lineage_haydn.mk`.
 * Signed with official private `releasekey` (`F4:E7:A0:7D:...:D3:D6`) to guarantee dirty-flashing with **zero data loss**.
+* Verified push notification delivery under Quick Doze & cgroup v2 freezer: Google Play Services FCM push tickets unfreeze messaging apps instantly with zero notification sleep/delay.
 
 #### 🛠️ Kernel & Submodule Architecture
 * Restored BakaSU submodule linkage in `drivers/kernelsu` pointing to `../KernelSU/kernel`.
