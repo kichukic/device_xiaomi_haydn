@@ -7,12 +7,13 @@
 
 ## 1. Why This Guide Exists
 
-When migrating to a new or re-provisioned build server (such as ServerHive EPYC), several non-standard components and automation pipelines must be explicitly configured. Without them, standard `repo sync` and builds will fail:
+When migrating to a new or re-provisioned build server (such as ServerHive EPYC), several non-standard components, custom device tree fixes, and automation pipelines must be explicitly configured. Without them, standard `repo sync` and builds will fail or produce unstable ROMs:
 1. **Empty `KernelSU` Submodule Directory:** Git submodule without `.gitmodules` leaves `drivers/kernelsu` dangling, failing `olddefconfig` at line 235 of `drivers/Kconfig`.
 2. **Missing Custom Throne Tracker Hook:** BakaSU manager preinstall crown hook must be patched into `throne_tracker.c`.
 3. **Official Signing Keys:** Must be restored to preserve data encryption and enable dirty-flashing over existing user data with zero data loss.
 4. **Official Build Verification:** `RISING_MAINTAINER` must match `vendor/official_devices/OTA/risingOS.maintainers` without quotes.
-5. **Dual-Rsync & Automated OTA Deployment:** Automated monitoring script that builds, syncs to SourceForge and local laptop, and updates OTA metadata without manual intervention.
+5. **Historical Architecture Fixes:** Proprietary GCam aux limits, Dolby deduplication, HyperOS Gallery permissions, AxSpoofManager keybox, and SystemUI freeze cures.
+6. **Dual-Rsync & Automated OTA Deployment:** Automated monitoring script that builds, syncs to SourceForge and local laptop, and updates OTA metadata without manual intervention.
 
 ---
 
@@ -414,3 +415,52 @@ PYEOF
     sleep 30
 done
 ```
+
+---
+
+## 10. Master Architecture Reference & Custom Tweaks Catalog
+
+A detailed index of all historical fixes, tweaks, and architecture decisions committed to the user's repositories:
+
+### A. Camera Subsystem & GCam Aux Whitelisting (`device/xiaomi/sm8350-common`)
+* **`vendor.camera.aux.packagelist` Prop Buffer Limit:**
+  Android system properties enforce a strict maximum length (92 bytes standard, 120 bytes max). In commit `723b385`, the property was trimmed to prevent `__system_property_add` buffer overflow crashes at boot while maintaining aux sensor access (ultra-wide & telemacro) for:
+  `org.codeaurora.snapcam,com.android.camera,com.google.android.GoogleCamera,com.google.android.GoogleCameraEng`.
+* **Camera Config Deduplication:**
+  Removed duplicate `camera_cnf.txt` in commit `7d6645d` to prevent target collision errors during vendor image packaging.
+
+### B. HyperOS Leica Camera & Gallery Prebuilts (`device/xiaomi/haydn`)
+* **Unprivileged Product App Placement (`gallery/Android.bp`):**
+  Commits `5fd4714` and `e8c3adb` moved HyperOS Gallery and MediaEditor from privileged `/system/priv-app/` to unprivileged `/product/app/`. This bypasses strict system priv-app permission whitelist enforcement crashes while retaining full gallery, photo, and video editing functions.
+* **Resigning Prebuilts:**
+  Commit `6d5f8dd` re-signed `HyperOSEditor` using the official `releasekey`, ensuring clean dirty-flashes over existing user installs.
+
+### C. Audio Subsystem & Dolby Deduplication (`device/xiaomi/sm8350-common`)
+* **Motorola Dolby Deduplication:**
+  Commit `842db91` removed a duplicate Motorola Dolby inherit in `common.mk` which was causing conflicting audio effect UUID registrations and audio HAL crashes on SM8350.
+* **Audio Offload Buffer Optimization:**
+  Configured 64KB audio offload buffer (`audio.offload.buffer.size.kb=64`) in `vendor.prop` for glitch-free low-latency playback with lower DSP wakeups.
+* **Bluetooth Audio Bitrate Uncapping:**
+  Commit `f11e710` uncapped LDAC/aptX Adaptive bitrates for Hi-Res audio output.
+
+### D. Play Integrity & AxSpoofManager (`frameworks/base`)
+* **Automatic Keybox Seeding:**
+  Commit `793e176` implemented a persistent fallback mechanism in `AxSpoofManager` that seeds a known-working certified keybox (`Yurikey67`) from `/product/security/`.
+* **Play Integrity Pass:**
+  Guarantees `MEETS_DEVICE_INTEGRITY` and `MEETS_BASIC_INTEGRITY` out-of-the-box, allowing Google Wallet, banking applications, and RCS messaging to operate without manual root modules.
+
+### E. SystemUI Stability & Freeze Cures (`frameworks/base` & `vendor/addons`)
+* **`ResourcesImpl` / `TypedArray` Graceful Fallback:**
+  Commit `640c232` adds graceful null-checks and fallbacks when loading `ColorStateList`, eliminating the cyclical 1-second UI freeze when unlocking the phone or waking the screen.
+* **`SignalIconLoader` Memory Leak Fix:**
+  Commit `51eb56c` prevents leaking `BroadcastReceiver` and `ContentObserver` instances on the status bar cellular signal icon.
+* **Material You Dark Theme Color Container Fallbacks:**
+  Commits `3248207`, `29dc4fd`, and `bc10890` in `vendor/addons` define missing `materialColorSurfaceContainer` and `primary_device_default_dark` values, preventing SystemUI crashes when switching to pitch-black or night themes.
+
+### F. Kernel & Root Hardware Features (`kernel/xiaomi/sm8350`)
+* **BakaSU + Inlined SUSFS v1.5.5:**
+  Root hiding and mount namespace isolation directly embedded in the kernel tree.
+* **USB Webcam Mode (`CONFIG_USB_CONFIGFS_F_UVC=y`):**
+  Commits `87f4070` and `845b1d4` enable the UVC function driver in `lahaina-qgki_defconfig`, allowing the phone to function as a plug-and-play 4K PC webcam.
+* **Watchdog & Crash Suppression:**
+  `panic_on_oops=0`, `panic=0`, and `# CONFIG_QCOM_FORCE_WDOG_BITE_ON_PANIC is not set` prevent modem/audio driver transients from triggering instant device brownouts.
