@@ -7,11 +7,12 @@
 
 ## 1. Why This Guide Exists
 
-When migrating to a new or re-provisioned build server (such as ServerHive EPYC), several non-standard components must be explicitly restored. Without them, standard `repo sync` will produce build failures:
+When migrating to a new or re-provisioned build server (such as ServerHive EPYC), several non-standard components and automation pipelines must be explicitly configured. Without them, standard `repo sync` and builds will fail:
 1. **Empty `KernelSU` Submodule Directory:** Git submodule without `.gitmodules` leaves `drivers/kernelsu` dangling, failing `olddefconfig` at line 235 of `drivers/Kconfig`.
 2. **Missing Custom Throne Tracker Hook:** BakaSU manager preinstall crown hook must be patched into `throne_tracker.c`.
-3. **Official Signing Keys:** Must be restored to preserve data encryption and enable dirty-flashing over existing user data.
+3. **Official Signing Keys:** Must be restored to preserve data encryption and enable dirty-flashing over existing user data with zero data loss.
 4. **Official Build Verification:** `RISING_MAINTAINER` must match `vendor/official_devices/OTA/risingOS.maintainers` without quotes.
+5. **Dual-Rsync & Automated OTA Deployment:** Automated monitoring script that builds, syncs to SourceForge and local laptop, and updates OTA metadata without manual intervention.
 
 ---
 
@@ -28,7 +29,7 @@ sudo apt update && sudo apt install -y \
 ```
 
 ### B. Git Credentials
-Configure GitHub credentials for `kichukic` to allow pushing to device trees and addons:
+Configure GitHub credentials for `kichukic` to allow pulling/pushing device trees, addons, and manifests:
 ```bash
 git config --global user.name "Kishor Thykkattu"
 git config --global user.email "38286414+kichukic@users.noreply.github.com"
@@ -43,6 +44,51 @@ export CCACHE_DIR=/serverhive/hijacku/.ccache
 export USE_CCACHE=1
 ccache -M 100G
 ccache -o compression=true
+```
+
+### D. SSH Key Setup & Passwordless Authentication
+
+#### 1. Laptop-to-Server Passwordless Access
+From your local maintainer laptop, authorize your SSH public key on the new server:
+```bash
+# Option A: Automatic
+ssh-copy-id -i ~/.ssh/id_ed25519.pub hijacku@<SERVER_HOST>
+
+# Option B: Direct pipe (if ssh-copy-id is unavailable)
+cat ~/.ssh/id_ed25519.pub | ssh hijacku@<SERVER_HOST> \
+    "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+```
+
+#### 2. Laptop SSH Config (`~/.ssh/config`)
+Configure connection persistence and disable stale multiplex socket deadlocks:
+```sshconfig
+Host waffle waffle.serverhive.in
+  HostName waffle.serverhive.in
+  User hijacku
+  Port 22
+  IdentityFile ~/.ssh/id_ed25519
+  # Keep ControlMaster disabled to avoid hung socket blocks when sessions drop
+  ServerAliveInterval 60
+  ServerAliveCountMax 10
+```
+
+#### 3. Server-to-SourceForge Passwordless Deployment Key
+Generate a dedicated SSH key on the build server so automated scripts can rsync to SourceForge without human password input:
+```bash
+# On the build server:
+ssh-keygen -t ed25519 -C "kichukic@gmail.com" -f ~/.ssh/id_ed25519_sourceforge -N ""
+cat ~/.ssh/id_ed25519_sourceforge.pub
+```
+1. Copy the public key output.
+2. Log into [SourceForge Account Settings](https://sourceforge.net/auth/preferences/) -> **SSH Keys**.
+3. Paste the key and save.
+4. Add the host entry to `~/.ssh/config` on the build server:
+```sshconfig
+Host frs.sourceforge.net
+  Hostname frs.sourceforge.net
+  User kichukic
+  IdentityFile ~/.ssh/id_ed25519_sourceforge
+  StrictHostKeyChecking accept-new
 ```
 
 ---
@@ -155,10 +201,10 @@ index d487fc8d..4a009f83 100644
      u8 signature_index = 0;
  
      if (ksu_has_manager())
-        return;
+         return;
  
      if (!is_manager_apk(apk, &signature_index))
-        return;
+         return;
  
      pr_info("Found preinstalled manager at %s\n", apk);
      crown_manager(apk, uid_data, signature_index);
@@ -214,9 +260,9 @@ Confirm the following optimizations are present in the source tree:
 
 ---
 
-## 8. Build & Release Execution
+## 8. Build Execution
 
-Launch inside a persistent tmux session:
+Launch inside a persistent tmux session on the server:
 ```bash
 tmux new -s rising
 cd /serverhive/hijacku/RisingOS
@@ -224,12 +270,147 @@ source build/envsetup.sh
 brunch haydn 2>&1 | tee /serverhive/hijacku/build.log
 ```
 
-When completed successfully:
-1. Output OTA zip located at `out/target/product/haydn/RisingOS-9-*-GAPPS-OFFICIAL-haydn-ota.zip`.
-2. Output `boot.img` located at `out/target/product/haydn/boot.img`.
-3. Sync to SourceForge:
-   ```bash
-   rsync -avP out/target/product/haydn/RisingOS-*-ota.zip out/target/product/haydn/boot.img \
-       kichukic@frs.sourceforge.net:/home/frs/project/rising-unofficial/
-   ```
-4. Update `Rising_OTA` metadata (`haydn.json`) with MD5, SHA256, and timestamp, then git push to `kichukic/Rising_OTA`.
+---
+
+## 9. Automated Build Daemon, Dual-Rsync & OTA Pipeline
+
+To eliminate manual monitoring and ensure artifacts are uploaded and synced immediately upon build completion, launch `monitor_build.sh` on your local laptop.
+
+### What the Pipeline Does Automatically:
+1. **Live Progress Polling:** Polls `soong_ui` / `ninja` and captures live output from tmux session `rising:0` every 30 seconds.
+2. **Failure Resilience:** Does not fail on momentary network disconnection (requires 5 consecutive failed checks ~2.5 mins).
+3. **Dual Rsync Pipeline (Upon Build Success):**
+   * **SourceForge:** Triggers high-speed rsync directly from the server's gigabit uplink to `kichukic@frs.sourceforge.net:/home/frs/project/rising-unofficial/`.
+   * **Laptop:** Pulls the signed OTA `.zip` and `boot.img` down to `/home/hijack/Downloads/RisingOS_haydn/`.
+4. **Automated Metadata & GitHub Push:**
+   * Computes SHA-256 and MD5 checksums and file sizes.
+   * Updates `haydn.json`, `GAPPS/haydn.json`, and `device/GAPPS/haydn.json`.
+   * Pushes the commit to `kichukic/Rising_OTA` on GitHub.
+
+### `monitor_build.sh` Script Implementation
+Save to `/home/hijack/Downloads/RisingOS_haydn/monitor_build.sh` and make executable (`chmod +x`):
+```bash
+#!/usr/bin/env bash
+set -u
+
+DOWNLOAD_DIR="/home/hijack/Downloads/RisingOS_haydn"
+OTA_REPO_DIR="/home/hijack/Rising_OTA"
+MONITOR_LOG="${DOWNLOAD_DIR}/monitor.log"
+SERVER="waffle"
+REMOTE_BUILD_DIR="/serverhive/hijacku/RisingOS"
+REMOTE_LOG="/serverhive/hijacku/build.log"
+START_TIME=$(date +%s)
+
+mkdir -p "$DOWNLOAD_DIR"
+rm -f "${DOWNLOAD_DIR}/BUILD_DONE" "${DOWNLOAD_DIR}/BUILD_FAILED"
+
+echo "=== Build monitor resumed at $(date) (Start Time: $START_TIME) ===" | tee -a "$MONITOR_LOG"
+
+CONSECUTIVE_NO_PROCESS=0
+
+while true; do
+    TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+
+    # Check if build processes are still running on server
+    IS_RUNNING=$(ssh -o BatchMode=yes -o ConnectTimeout=15 "$SERVER" "ps -eo comm | grep -E 'soong_build|ninja|soong_ui|build_risingos' | grep -v grep | head -n 1" 2>/dev/null || echo "")
+
+    # Get last progress line from tmux capture-pane or build log
+    PROGRESS=$(ssh -o BatchMode=yes -o ConnectTimeout=15 "$SERVER" "tmux capture-pane -pt rising:0 -S -10 2>/dev/null | grep -E '^\[ *[0-9]+%|^====|^####|FAILED:' | tail -n 1" 2>/dev/null || echo "")
+    if [ -z "$PROGRESS" ]; then
+        PROGRESS=$(ssh -o BatchMode=yes -o ConnectTimeout=15 "$SERVER" "grep -E '^\[ *[0-9]+%|^====|^####|FAILED:' $REMOTE_LOG 2>/dev/null | tail -n 1" 2>/dev/null || echo "")
+    fi
+
+    echo "[$TIMESTAMP] Running: $([ -n "$IS_RUNNING" ] && echo YES || echo NO) | Progress: $PROGRESS" | tee -a "$MONITOR_LOG"
+
+    if [ -n "$IS_RUNNING" ]; then
+        CONSECUTIVE_NO_PROCESS=0
+    else
+        CONSECUTIVE_NO_PROCESS=$((CONSECUTIVE_NO_PROCESS + 1))
+        # Require 5 consecutive checks (~2.5 minutes) with no processes before concluding
+        if [ "$CONSECUTIVE_NO_PROCESS" -ge 5 ]; then
+            # Check if build completed successfully
+            IS_SUCCESS=$(ssh -o BatchMode=yes -o ConnectTimeout=15 "$SERVER" "tmux capture-pane -pt rising:0 -S -50 2>/dev/null | grep -E '#### build completed successfully' | tail -n 1" 2>/dev/null || echo "")
+            if [ -z "$IS_SUCCESS" ]; then
+                IS_SUCCESS=$(ssh -o BatchMode=yes -o ConnectTimeout=15 "$SERVER" "grep -E '#### build completed successfully' $REMOTE_LOG 2>/dev/null | tail -n 1" 2>/dev/null || echo "")
+            fi
+
+            if [ -n "$IS_SUCCESS" ]; then
+                echo "[$TIMESTAMP] >>> BUILD COMPLETED SUCCESSFULLY! Starting post-processing..." | tee -a "$MONITOR_LOG"
+
+                # Find newest OTA zip created
+                REMOTE_ZIP=$(ssh "$SERVER" "ls -t ${REMOTE_BUILD_DIR}/out/target/product/haydn/RisingOS-*-ota.zip 2>/dev/null | head -n 1")
+
+                if [ -z "$REMOTE_ZIP" ]; then
+                    echo "[$TIMESTAMP] ERROR: Build succeeded but no zip found in out/target/product/haydn/!" | tee -a "$MONITOR_LOG"
+                    echo "FAILED: No zip found" > "${DOWNLOAD_DIR}/BUILD_FAILED"
+                    exit 1
+                fi
+
+                ZIP_NAME=$(basename "$REMOTE_ZIP")
+                REMOTE_SIZE=$(ssh "$SERVER" "stat -c%s $REMOTE_ZIP")
+                REMOTE_MD5=$(ssh "$SERVER" "md5sum $REMOTE_ZIP | awk '{print \$1}'")
+                REMOTE_SHA256=$(ssh "$SERVER" "sha256sum $REMOTE_ZIP | awk '{print \$1}'")
+                UNIX_TIME=$(date +%s)
+
+                echo "[$TIMESTAMP] New Build Detected: $ZIP_NAME ($REMOTE_SIZE bytes)" | tee -a "$MONITOR_LOG"
+
+                # 1. Dual-Rsync Pipeline: Upload directly to SourceForge from server
+                echo "[$TIMESTAMP] Uploading zips and boot.img to SourceForge..." | tee -a "$MONITOR_LOG"
+                ssh "$SERVER" "rsync -avP --stats ${REMOTE_BUILD_DIR}/out/target/product/haydn/RisingOS-*-ota.zip ${REMOTE_BUILD_DIR}/out/target/product/haydn/boot.img kichukic@frs.sourceforge.net:/home/frs/project/rising-unofficial/" | tee -a "$MONITOR_LOG" || true
+
+                # 2. Update Rising_OTA JSON metadata and push to GitHub
+                echo "[$TIMESTAMP] Updating Rising_OTA metadata and pushing to GitHub..." | tee -a "$MONITOR_LOG"
+                python3 - << PYEOF
+import json
+
+json_path = "${OTA_REPO_DIR}/haydn.json"
+with open(json_path, "r") as f:
+    data = json.load(f)
+
+for item in data.get("response", []):
+    item["filename"] = "${ZIP_NAME}"
+    item["download"] = "https://downloads.sourceforge.net/project/rising-unofficial/${ZIP_NAME}"
+    item["url"] = "https://downloads.sourceforge.net/project/rising-unofficial/${ZIP_NAME}"
+    item["timestamp"] = int("${UNIX_TIME}")
+    item["datetime"] = int("${UNIX_TIME}")
+    item["md5"] = "${REMOTE_MD5}"
+    item["sha256"] = "${REMOTE_SHA256}"
+    item["id"] = "${REMOTE_SHA256}"
+    item["size"] = int("${REMOTE_SIZE}")
+    item["romtype"] = "official"
+
+content = json.dumps(data, indent=2) + "\n"
+for path in [json_path, "${OTA_REPO_DIR}/GAPPS/haydn.json", "${OTA_REPO_DIR}/device/GAPPS/haydn.json", "${DOWNLOAD_DIR}/haydn.json"]:
+    with open(path, "w") as f:
+        f.write(content)
+
+print("OTA JSON files successfully updated.")
+PYEOF
+
+                cd "$OTA_REPO_DIR"
+                git add haydn.json GAPPS/haydn.json device/GAPPS/haydn.json
+                git commit -m "haydn: Release RisingOS 9 build ${ZIP_NAME}" || true
+                git push origin main || true
+
+                # 3. Dual-Rsync Pipeline: Pull new files to local laptop
+                echo "[$TIMESTAMP] Downloading $ZIP_NAME and boot.img to local machine..." | tee -a "$MONITOR_LOG"
+                rsync -avP --stats "waffle:${REMOTE_BUILD_DIR}/out/target/product/haydn/RisingOS-*-ota.zip" "${DOWNLOAD_DIR}/"
+                rsync -avP --stats "waffle:${REMOTE_BUILD_DIR}/out/target/product/haydn/boot.img" "${DOWNLOAD_DIR}/boot.img"
+
+                echo "[$TIMESTAMP] ALL TASKS COMPLETE!" | tee -a "$MONITOR_LOG"
+                echo "SUCCESS: ${ZIP_NAME}" > "${DOWNLOAD_DIR}/BUILD_DONE"
+                exit 0
+            else
+                IS_FAILED=$(ssh "$SERVER" "grep -E '^FAILED:' $REMOTE_LOG 2>/dev/null | tail -n 1" || echo "")
+                if [ -n "$IS_FAILED" ]; then
+                    echo "[$TIMESTAMP] Build process encountered error: $IS_FAILED" | tee -a "$MONITOR_LOG"
+                    echo "FAILED: $IS_FAILED" > "${DOWNLOAD_DIR}/BUILD_FAILED"
+                    exit 1
+                fi
+            fi
+        fi
+    fi
+
+    sleep 30
+done
+```
