@@ -485,5 +485,5 @@ When flashing new releases over an existing installation:
 1. Reboot phone to **TWRP** or **OrangeFox Recovery**.
 2. Flash `RisingOS-9-*-GAPPS-COMMUNITY-haydn-ota.zip`.
 3. Wipe **Dalvik / ART Cache** ONLY.
-4. ⚠️ **DO NOT WIPE OR FORMAT `/data`** — User data, applications, accounts, photos, and WhatsApp chats will be 100% preserved.
+4. **DO NOT WIPE OR FORMAT `/data`** — User data, applications, accounts, photos, and WhatsApp chats will be 100% preserved.
 5. Reboot to System. Encryption keys remain valid because all builds are signed with the same private `releasekey`.
