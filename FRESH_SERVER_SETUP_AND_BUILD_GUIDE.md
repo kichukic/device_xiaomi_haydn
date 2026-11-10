@@ -14,7 +14,7 @@ When migrating to a new or re-provisioned build server (such as ServerHive EPYC)
 4. **Official Build Verification:** `RISING_MAINTAINER` must match `vendor/official_devices/OTA/risingOS.maintainers` without quotes.
 5. **Historical Architecture Fixes:** Proprietary GCam aux limits, Dolby deduplication, HyperOS Gallery permissions, AxSpoofManager keybox, and SystemUI freeze cures.
 6. **Dual-Rsync & Automated OTA Deployment:** Automated monitoring script that builds, syncs to SourceForge and local laptop, and updates OTA metadata without manual intervention.
-7. **Leica MIUI Camera & Motorola Dolby Atmos Inclusions:** Device trees include these via conditional `inherit-product-if-exists` and `-include`. They must be explicitly cloned into `vendor/xiaomi/miuicamera-haydn` and `hardware/dolby` so they are compiled into the ROM.
+7. **Leica MIUI Camera & Motorola Dolby Atmos Inclusions:** Device trees include these via conditional `inherit-product-if-exists` and `-include`. Both are hosted and maintained directly under your own GitHub profile (`kichukic/vendor_xiaomi_miuicamera-haydn` on branch `17.0` and `kichukic/hardware_dolby` on branch `moto-1.1`) so fresh server provisions can clone and reuse them reliably under a single GitHub namespace.
 
 ---
 
@@ -127,7 +127,6 @@ Create `/serverhive/hijacku/RisingOS/.repo/local_manifests/haydn.xml`:
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
     <remote name="gh" fetch="https://github.com" />
-    <remote name="lucifer" fetch="https://gitlab.com/Lucifer-Alive" />
 
     <!-- Device and Common Trees -->
     <remove-project name="device/xiaomi/haydn" />
@@ -147,11 +146,11 @@ Create `/serverhive/hijacku/RisingOS/.repo/local_manifests/haydn.xml`:
     <project name="TheMuppets/proprietary_vendor_xiaomi_haydn" path="vendor/xiaomi/haydn" remote="gh" revision="lineage-24.0" />
     <project name="TheMuppets/proprietary_vendor_xiaomi_sm8350-common" path="vendor/xiaomi/sm8350-common" remote="gh" revision="lineage-24.0" />
 
-    <!-- Leica MIUI Camera 5.0 (Lucifer-Alive) -->
-    <project path="vendor/xiaomi/miuicamera-haydn" name="vendor-xiaomi-miuicamera-haydn" remote="lucifer" revision="17.0" />
+    <!-- Leica MIUI Camera 5.0 (kichukic) -->
+    <project path="vendor/xiaomi/miuicamera-haydn" name="kichukic/vendor_xiaomi_miuicamera-haydn" remote="gh" revision="17.0" />
 
-    <!-- Motorola Dolby Atmos DAX3 -->
-    <project path="hardware/dolby" name="swiitch-OFF-Lab/hardware_dolby" remote="gh" revision="moto-1.1" />
+    <!-- Motorola Dolby Atmos DAX3 (kichukic) -->
+    <project path="hardware/dolby" name="kichukic/hardware_dolby" remote="gh" revision="moto-1.1" />
 
     <!-- Frameworks Base (AxSpoofManager & Yurikey67) -->
     <remove-project name="frameworks/base" />
@@ -446,7 +445,7 @@ A detailed index of all historical fixes, tweaks, and architecture decisions com
 
 ### B. HyperOS Leica Camera & Gallery Prebuilts (`device/xiaomi/haydn`)
 * **Leica MIUI Camera 5.0 Integration (`vendor/xiaomi/miuicamera-haydn`):**
-  Sourced from Lucifer's repository (`https://gitlab.com/Lucifer-Alive/vendor-xiaomi-miuicamera-haydn`, branch `17.0`) as specified in Lucifer's manifest (`Never-Alive/manifest`). Integrates 108MP high-resolution mode, 8K video recording, 960fps super slow-motion, Leica Authentic & Vibrant profiles, and the MIUI post-processing service (`vendor.xiaomi.hardware.campostproc@1.0_system.so`).
+  Maintained and backed up directly in your GitHub profile at [`kichukic/vendor_xiaomi_miuicamera-haydn`](https://github.com/kichukic/vendor_xiaomi_miuicamera-haydn) (branches `17.0` and `main`). Sourced from Lucifer's repository (`https://gitlab.com/Lucifer-Alive/vendor-xiaomi-miuicamera-haydn`, branch `17.0`) as specified in Lucifer's manifest (`Never-Alive/manifest`), and converted with Git LFS to comply with GitHub's file size limits. Integrates 108MP high-resolution mode, 8K video recording, 960fps super slow-motion, Leica Authentic & Vibrant profiles, and the MIUI post-processing service (`vendor.xiaomi.hardware.campostproc@1.0_system.so`).
 * **Unprivileged Product App Placement (`gallery/Android.bp`):**
   Commits `5fd4714` and `e8c3adb` moved HyperOS Gallery and MediaEditor from privileged `/system/priv-app/` to unprivileged `/product/app/`. This bypasses strict system priv-app permission whitelist enforcement crashes while retaining full gallery, photo, and video editing functions.
 * **Resigning Prebuilts:**
@@ -454,7 +453,7 @@ A detailed index of all historical fixes, tweaks, and architecture decisions com
 
 ### C. Audio Subsystem & Dolby Atmos (`device/xiaomi/sm8350-common` & `hardware/dolby`)
 * **Motorola Dolby Atmos Integration (`hardware/dolby`):**
-  Sourced from `swiitch-OFF-Lab/hardware_dolby` (branch `moto-1.1`). Integrates `MotoDolbyDax3`, `daxService`, `DSPVolumeSynchronizer`, 10-band equalizer, audio presets (Dynamic, Movie, Music, Voice), and Quick Settings tile without HAL DSP injection crashes.
+  Maintained and backed up directly in your GitHub profile at [`kichukic/hardware_dolby`](https://github.com/kichukic/hardware_dolby) (branches `moto-1.1` and `main`). Sourced from `swiitch-OFF-Lab/hardware_dolby` (branch `moto-1.1`). Integrates `MotoDolbyDax3`, `daxService`, `DSPVolumeSynchronizer`, 10-band equalizer, audio presets (Dynamic, Movie, Music, Voice), and Quick Settings tile without HAL DSP injection crashes.
 * **Motorola Dolby Deduplication:**
   Commit `842db91` removed a duplicate Motorola Dolby inherit in `common.mk` which was causing conflicting audio effect UUID registrations and audio HAL crashes on SM8350.
 * **Audio Offload Buffer Optimization:**
