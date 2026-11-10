@@ -14,6 +14,7 @@ When migrating to a new or re-provisioned build server (such as ServerHive EPYC)
 4. **Official Build Verification:** `RISING_MAINTAINER` must match `vendor/official_devices/OTA/risingOS.maintainers` without quotes.
 5. **Historical Architecture Fixes:** Proprietary GCam aux limits, Dolby deduplication, HyperOS Gallery permissions, AxSpoofManager keybox, and SystemUI freeze cures.
 6. **Dual-Rsync & Automated OTA Deployment:** Automated monitoring script that builds, syncs to SourceForge and local laptop, and updates OTA metadata without manual intervention.
+7. **Leica MIUI Camera & Motorola Dolby Atmos Inclusions:** Device trees include these via conditional `inherit-product-if-exists` and `-include`. They must be explicitly cloned into `vendor/xiaomi/miuicamera-haydn` and `hardware/dolby` so they are compiled into the ROM.
 
 ---
 
@@ -125,31 +126,43 @@ Create `/serverhive/hijacku/RisingOS/.repo/local_manifests/haydn.xml`:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
+    <remote name="gh" fetch="https://github.com" />
+    <remote name="lucifer" fetch="https://gitlab.com/Lucifer-Alive" />
+
     <!-- Device and Common Trees -->
     <remove-project name="device/xiaomi/haydn" />
-    <project name="kichukic/device_xiaomi_haydn" path="device/xiaomi/haydn" remote="github" revision="lineage-24.0" />
+    <project name="kichukic/device_xiaomi_haydn" path="device/xiaomi/haydn" remote="gh" revision="lineage-24.0" />
 
     <remove-project name="device/xiaomi/sm8350-common" />
-    <project name="kichukic/android_device_xiaomi_sm8350-common" path="device/xiaomi/sm8350-common" remote="github" revision="lineage-24.0" />
+    <project name="kichukic/android_device_xiaomi_sm8350-common" path="device/xiaomi/sm8350-common" remote="gh" revision="lineage-24.0" />
 
     <!-- Kernel with SUSFS & BakaSU -->
     <remove-project name="kernel/xiaomi/sm8350" />
-    <project name="kichukic/android_kernel_xiaomi_sm8350" path="kernel/xiaomi/sm8350" remote="github" revision="lineage-24.0" />
+    <project name="kichukic/android_kernel_xiaomi_sm8350" path="kernel/xiaomi/sm8350" remote="gh" revision="lineage-24.0" />
+
+    <!-- Hardware Xiaomi -->
+    <project path="hardware/xiaomi" name="LineageOS/android_hardware_xiaomi" remote="gh" revision="lineage-24.0" />
 
     <!-- Vendor Blobs from TheMuppets -->
-    <project name="TheMuppets/proprietary_vendor_xiaomi_haydn" path="vendor/xiaomi/haydn" remote="github" revision="lineage-24.0" />
-    <project name="TheMuppets/proprietary_vendor_xiaomi_sm8350-common" path="vendor/xiaomi/sm8350-common" remote="github" revision="lineage-24.0" />
+    <project name="TheMuppets/proprietary_vendor_xiaomi_haydn" path="vendor/xiaomi/haydn" remote="gh" revision="lineage-24.0" />
+    <project name="TheMuppets/proprietary_vendor_xiaomi_sm8350-common" path="vendor/xiaomi/sm8350-common" remote="gh" revision="lineage-24.0" />
+
+    <!-- Leica MIUI Camera 5.0 (Lucifer-Alive) -->
+    <project path="vendor/xiaomi/miuicamera-haydn" name="vendor-xiaomi-miuicamera-haydn" remote="lucifer" revision="17.0" />
+
+    <!-- Motorola Dolby Atmos DAX3 -->
+    <project path="hardware/dolby" name="swiitch-OFF-Lab/hardware_dolby" remote="gh" revision="moto-1.1" />
 
     <!-- Frameworks Base (AxSpoofManager & Yurikey67) -->
     <remove-project name="frameworks/base" />
-    <project name="kichukic/android_frameworks_base-new" path="frameworks/base" remote="github" revision="seventeen" />
+    <project name="kichukic/android_frameworks_base-new" path="frameworks/base" remote="gh" revision="seventeen" />
 
     <!-- Addons & Official Whitelist -->
     <remove-project name="vendor/addons" />
-    <project name="kichukic/android_vendor_addons" path="vendor/addons" remote="github" revision="seventeen" />
+    <project name="kichukic/android_vendor_addons" path="vendor/addons" remote="gh" revision="seventeen" />
 
     <remove-project name="vendor/official_devices" />
-    <project name="kichukic/official_devices" path="vendor/official_devices" remote="github" revision="fifteen" />
+    <project name="kichukic/official_devices" path="vendor/official_devices" remote="gh" revision="fifteen" />
 </manifest>
 ```
 
@@ -432,12 +445,16 @@ A detailed index of all historical fixes, tweaks, and architecture decisions com
   Removed duplicate `camera_cnf.txt` in commit `7d6645d` to prevent target collision errors during vendor image packaging.
 
 ### B. HyperOS Leica Camera & Gallery Prebuilts (`device/xiaomi/haydn`)
+* **Leica MIUI Camera 5.0 Integration (`vendor/xiaomi/miuicamera-haydn`):**
+  Sourced from Lucifer's repository (`https://gitlab.com/Lucifer-Alive/vendor-xiaomi-miuicamera-haydn`, branch `17.0`) as specified in Lucifer's manifest (`Never-Alive/manifest`). Integrates 108MP high-resolution mode, 8K video recording, 960fps super slow-motion, Leica Authentic & Vibrant profiles, and the MIUI post-processing service (`vendor.xiaomi.hardware.campostproc@1.0_system.so`).
 * **Unprivileged Product App Placement (`gallery/Android.bp`):**
   Commits `5fd4714` and `e8c3adb` moved HyperOS Gallery and MediaEditor from privileged `/system/priv-app/` to unprivileged `/product/app/`. This bypasses strict system priv-app permission whitelist enforcement crashes while retaining full gallery, photo, and video editing functions.
 * **Resigning Prebuilts:**
   Commit `6d5f8dd` re-signed `HyperOSEditor` using the official `releasekey`, ensuring clean dirty-flashes over existing user installs.
 
-### C. Audio Subsystem & Dolby Deduplication (`device/xiaomi/sm8350-common`)
+### C. Audio Subsystem & Dolby Atmos (`device/xiaomi/sm8350-common` & `hardware/dolby`)
+* **Motorola Dolby Atmos Integration (`hardware/dolby`):**
+  Sourced from `swiitch-OFF-Lab/hardware_dolby` (branch `moto-1.1`). Integrates `MotoDolbyDax3`, `daxService`, `DSPVolumeSynchronizer`, 10-band equalizer, audio presets (Dynamic, Movie, Music, Voice), and Quick Settings tile without HAL DSP injection crashes.
 * **Motorola Dolby Deduplication:**
   Commit `842db91` removed a duplicate Motorola Dolby inherit in `common.mk` which was causing conflicting audio effect UUID registrations and audio HAL crashes on SM8350.
 * **Audio Offload Buffer Optimization:**
