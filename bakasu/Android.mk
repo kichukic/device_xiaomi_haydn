@@ -24,6 +24,9 @@ LOCAL_REPLACE_PREBUILT_APK_INSTALLED := $(LOCAL_PATH)/BakaSU.apk
 LOCAL_CERTIFICATE := PRESIGNED
 LOCAL_PRODUCT_MODULE := true
 LOCAL_DEX_PREOPT := false
+# Prebuilt, installed byte-for-byte and never preopted; its optional androidx.window
+# uses-library tags trip the dexpreopt manifest check, so skip it for this module.
+LOCAL_ENFORCE_USES_LIBRARIES := false
 LOCAL_MULTILIB := 64
 LOCAL_PREBUILT_JNI_LIBS := \
     lib/arm64-v8a/libadbroot.so \
