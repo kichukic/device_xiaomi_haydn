@@ -8,10 +8,9 @@ android_app_import {
     presigned: true,
     preprocessed: true,
     product_specific: true,
-    optional_uses_libs: [
-        "androidx.window.extensions",
-        "androidx.window.sidecar",
-    ],
+    dex_preopt: {
+        enabled: false,
+    },
 }
 
 android_app_import {
@@ -20,8 +19,7 @@ android_app_import {
     presigned: true,
     preprocessed: true,
     product_specific: true,
-    optional_uses_libs: [
-        "androidx.window.extensions",
-        "androidx.window.sidecar",
-    ],
+    dex_preopt: {
+        enabled: false,
+    },
 }
