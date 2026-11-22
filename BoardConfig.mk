@@ -50,3 +50,8 @@ include vendor/xiaomi/haydn/BoardConfigVendor.mk
 
 # Xiaomi Camera
 -include vendor/xiaomi/miuicamera-haydn/BoardConfig.mk
+
+# Allow ELF prebuilts and VINTF in PRODUCT_COPY_FILES (e.g. GApps libraries)
+BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
+BUILD_BROKEN_PREBUILT_ELF_FILES := true
+BUILD_BROKEN_VINTF_PRODUCT_COPY_FILES := true
