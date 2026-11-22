@@ -52,3 +52,12 @@ PRODUCT_PRODUCT_PROPERTIES += \
     ro.miui.build.region=Global
 
 PRODUCT_BROKEN_VERIFY_USES_LIBRARIES := true
+
+# Private release keys signing
+PRODUCT_DEFAULT_DEV_CERTIFICATE := vendor/lineage-priv/keys/releasekey
+PRODUCT_EXTRA_RECOVERY_KEYS += vendor/lineage-priv/keys/releasekey
+
+# Security: Play Integrity & TrickyStore hardware keybox attestation seed
+PRODUCT_COPY_FILES += \
+    vendor/kic/security/keybox.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/security/keybox.xml \
+    vendor/kic/security/pif.json:$(TARGET_COPY_OUT_PRODUCT)/etc/security/pif.json
