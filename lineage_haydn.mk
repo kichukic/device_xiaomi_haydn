@@ -32,8 +32,3 @@ PRODUCT_PACKAGES +=     hijackCUT     HyperOSGallery     HyperOSEditor
 PRODUCT_PRODUCT_PROPERTIES +=     ro.miui.ui.version.name=V816.0.19.0.UKKMIXM     ro.miui.ui.version.code=14     ro.miui.region=Global     ro.miui.build.region=Global
 
 
-# Enforce Google Suite
-PRODUCT_PACKAGES +=     GoogleDialer     PrebuiltBugle     GoogleContacts     Photos     NexusLauncherRelease
-
-# Inherit official signing keys if generated
--include vendor/lineage-priv/keys/keys.mk
