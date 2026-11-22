@@ -32,3 +32,4 @@ PRODUCT_PACKAGES +=     hijackCUT     HyperOSGallery     HyperOSEditor
 PRODUCT_PRODUCT_PROPERTIES +=     ro.miui.ui.version.name=V816.0.19.0.UKKMIXM     ro.miui.ui.version.code=14     ro.miui.region=Global     ro.miui.build.region=Global
 
 
+PRODUCT_BROKEN_VERIFY_USES_LIBRARIES := true
