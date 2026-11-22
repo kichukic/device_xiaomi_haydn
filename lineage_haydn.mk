@@ -15,11 +15,13 @@ PRODUCT_MANUFACTURER := Xiaomi
 PRODUCT_MODEL := M2012K11G
 PRODUCT_NAME := lineage_haydn
 
-PRODUCT_BUILD_PROP_OVERRIDES +=     BuildDesc="haydn_global-user 14 UKQ1.231207.002 V816.0.19.0.UKKMIXM release-keys"     BuildFingerprint=Xiaomi/haydn_global/haydn:14/UKQ1.231207.002/V816.0.19.0.UKKMIXM:user/release-keys     DeviceProduct=haydn     SystemName=haydn_global     RisingChipset="Snapdragon 888 5G"     RisingMaintainer="Kishor TH"
+PRODUCT_BUILD_PROP_OVERRIDES +=     BuildDesc="haydn_global-user 14 UKQ1.231207.002 V816.0.19.0.UKKMIXM release-keys"     BuildFingerprint=Xiaomi/haydn_global/haydn:14/UKQ1.231207.002/V816.0.19.0.UKKMIXM:user/release-keys     DeviceProduct=haydn     SystemName=haydn_global     RisingChipset="Snapdragon 888 5G"     RisingMaintainer="Kishor"
 
 PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
 
-RISING_MAINTAINER := Kishor TH
+RISING_MAINTAINER := Kishor
+LINEAGE_MAINTAINER := Kishor
+KIC_MAINTAINER := Kishor
 RISING_BUILDTYPE := COMMUNITY
 
 
