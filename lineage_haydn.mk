@@ -14,6 +14,9 @@ $(call inherit-product, device/xiaomi/haydn/device.mk)
 # Inherit some common Lineage stuff.
 $(call inherit-product, vendor/lineage/config/common_full_phone.mk)
 
+# Inherit MindTheGapps
+$(call inherit-product, vendor/kic/gapps/gapps.mk)
+
 PRODUCT_BRAND := Xiaomi
 PRODUCT_DEVICE := haydn
 PRODUCT_MANUFACTURER := Xiaomi
