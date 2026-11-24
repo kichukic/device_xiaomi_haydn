@@ -1,0 +1,14 @@
+//
+// Prebuilt hijackCUT application
+//
+
+android_app_import {
+    name: "hijackCUT",
+    apk: "hijackcut.apk",
+    presigned: true,
+    preprocessed: true,
+    product_specific: true,
+    dex_preopt: {
+        enabled: false,
+    },
+}

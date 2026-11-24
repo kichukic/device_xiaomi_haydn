@@ -1,0 +1,63 @@
+#
+# SPDX-FileCopyrightText: The LineageOS Project
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# Inherit from sm8350-common
+$(call inherit-product, device/xiaomi/sm8350-common/common.mk)
+
+# Audio
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/audio/audio_platform_info.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_lahaina/audio_platform_info.xml \
+    $(LOCAL_PATH)/audio/audio_platform_info_intcodec.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_lahaina/audio_platform_info_intcodec.xml \
+    $(LOCAL_PATH)/audio/mixer_paths.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_lahaina/mixer_paths.xml \
+    $(LOCAL_PATH)/audio/mixer_paths_overlay_dynamic.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_lahaina/mixer_paths_overlay_dynamic.xml \
+    $(LOCAL_PATH)/audio/mixer_paths_overlay_static.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio/sku_lahaina/mixer_paths_overlay_static.xml
+
+# Init
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/rootdir/etc/init.haydn.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.haydn.rc
+
+
+# NFC
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/permissions/android.hardware.exclude-nfc.xml:$(TARGET_COPY_OUT_ODM)/etc/permissions/sku_haydn_in/android.hardware.exclude-nfc.xml
+
+# Overlays
+PRODUCT_PACKAGES += \
+    ApertureOverlayHaydn \
+    FrameworkOverlayHaydn \
+    SettingsOverlayHaydn \
+    SettingsProviderOverlayHaydn \
+    SettingsProviderOverlayHaydnCN \
+    SettingsProviderOverlayHaydnIN \
+    SettingsProviderOverlayHaydnproCN \
+    SystemUIOverlayHaydn \
+    UpdaterOverlayHaydn \
+    WifiOverlayHaydn \
+    WifiOverlayHaydnCN \
+    WifiOverlayHaydnIN \
+    WifiOverlayHaydnproCN
+
+# KernelSU manager (BakaSU), preinstalled as a regular product app
+PRODUCT_PACKAGES += \
+    com.resukisu.resukisu-preinstalled
+
+# Refresh Rate
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.surface_flinger.use_content_detection_for_refresh_rate=false
+
+# Soong namespaces
+PRODUCT_SOONG_NAMESPACES += \
+    $(LOCAL_PATH)
+
+# Vibrator
+$(call soong_config_set,qti_vibrator,effect_lib,libqtivibratoreffect.xiaomi)
+$(call soong_config_set_bool,qti_vibrator,use_effect_stream,true)
+
+# Call the proprietary setup
+$(call inherit-product, vendor/xiaomi/haydn/haydn-vendor.mk)
+
+# Xiaomi Camera (MIUI/Leica Camera)
+$(call inherit-product-if-exists, vendor/xiaomi/miuicamera-haydn/device.mk)
+
